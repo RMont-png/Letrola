@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Letrox</title>
+    <title>Letrola</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f172a">
     <link rel="apple-touch-icon" href="icon-192.png">
@@ -17,27 +17,50 @@
         <!-- Tela de Menu -->
         <div id="menu-screen">
             <div class="menu-content">
-                <h1 class="game-title">LETROX</h1>
+                <h1 class="game-title">LETROLA</h1>
                 <div class="records-box">
-                    <div class="records-title">Recorde</div>
-                    <div class="records-values">
-                        <div class="record-item">
-                            <img src="icons Letrox/fase.svg" class="record-icon icon-orange">
-                            <span id="record-level">-</span>
+                    <div class="records-container-split">
+                        <div class="record-mode-section">
+                            <div class="records-title">Livre</div>
+                            <div class="records-values">
+                                <div class="record-item">
+                                    <img src="icons Letrola/fase.svg" class="record-icon icon-orange">
+                                    <span id="record-free-level">-</span>
+                                </div>
+                                <div class="record-item">
+                                    <img src="icons Letrola/estrela.svg" class="record-icon icon-yellow">
+                                    <span id="record-free-score">0000</span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="record-item">
-                            <img src="icons Letrox/estrela.svg" class="record-icon icon-yellow">
-                            <span id="record-score">0000</span>
+                        <div class="record-mode-divider"></div>
+                        <div class="record-mode-section">
+                            <div class="records-title">Contratempo</div>
+                            <div class="records-values">
+                                <div class="record-item">
+                                    <img src="icons Letrola/fase.svg" class="record-icon icon-orange">
+                                    <span id="record-time-level">-</span>
+                                </div>
+                                <div class="record-item">
+                                    <img src="icons Letrola/estrela.svg" class="record-icon icon-yellow">
+                                    <span id="record-time-score">0000</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="menu-controls">
-                    <button id="play-btn" class="primary-btn"><img src="icons Letrox/play.svg" class="btn-icon">
+                <div class="menu-controls" id="main-menu-controls">
+                    <button id="play-btn" class="primary-btn"><img src="icons Letrola/play.svg" class="btn-icon">
                         Jogar</button>
-                    <button id="settings-btn" class="secondary-btn"><img src="icons Letrox/config.svg" class="btn-icon">
+                    <button id="settings-btn" class="secondary-btn"><img src="icons Letrola/config.svg" class="btn-icon">
                         Configurações</button>
-                    <button id="rules-btn" class="secondary-btn"><img src="icons Letrox/como jogar.svg"
+                    <button id="rules-btn" class="secondary-btn"><img src="icons Letrola/como jogar.svg"
                             class="btn-icon"> Como jogar</button>
+                </div>
+                <div class="menu-controls hidden" id="mode-selection-controls">
+                    <button id="mode-free-btn" class="primary-btn">Livre</button>
+                    <button id="mode-time-btn" class="primary-btn">Contratempo</button>
+                    <button id="mode-back-btn" class="secondary-btn">Voltar</button>
                 </div>
             </div>
         </div>
@@ -45,12 +68,12 @@
         <!-- Tela do Jogo -->
         <div id="game-screen" class="hidden">
             <header>
-                <button id="back-btn" class="nav-btn" aria-label="Voltar"><img src="icons Letrox/seta.svg"
+                <button id="back-btn" class="nav-btn" aria-label="Voltar"><img src="icons Letrola/seta.svg"
                         class="btn-icon"></button>
                 <div class="stats">
-                    <div class="level"><img src="icons Letrox/fase.svg" class="stats-icon icon-orange"> <span
+                    <div class="level"><img src="icons Letrola/fase.svg" class="stats-icon icon-orange"> <span
                             id="level-display">1</span></div>
-                    <div class="score"><img src="icons Letrox/estrela.svg" class="stats-icon icon-yellow"> <span
+                    <div class="score"><img src="icons Letrola/estrela.svg" class="stats-icon icon-yellow"> <span
                             id="score-display">0000</span></div>
                 </div>
                 <button id="next-level-btn" class="disabled">Próxima Fase</button>
@@ -72,10 +95,10 @@
                 </div>
 
                 <div class="controls">
-                    <button id="hint-btn" aria-label="Poderes"><img src="icons Letrox/raio.svg"
+                    <button id="hint-btn" aria-label="Poderes"><img src="icons Letrola/raio.svg"
                             class="btn-icon"></button>
-                    <button id="submit-btn">Enviar <img src="icons Letrox/enviar.svg" class="btn-icon"></button>
-                    <button id="shuffle-btn" aria-label="Embaralhar"><img src="icons Letrox/shuffle.svg"
+                    <button id="submit-btn">Enviar <img src="icons Letrola/enviar.svg" class="btn-icon"></button>
+                    <button id="shuffle-btn" aria-label="Embaralhar"><img src="icons Letrola/shuffle.svg"
                             class="btn-icon"></button>
                 </div>
             </footer>
@@ -94,11 +117,11 @@
     <!-- Modal de Poderes -->
     <div id="powers-modal" class="hidden">
         <div class="modal-content powers-content">
-            <h2><img src="icons Letrox/raio.svg" class="title-icon" style="margin-right: 2px;">
+            <h2><img src="icons Letrola/raio.svg" class="title-icon" style="margin-right: 2px;">
                 Poderes</h2>
             <div class="powers-list">
                 <button id="power-first-letter" class="power-btn">
-                    <img src="icons Letrox/poder 1.svg" class="power-icon">
+                    <img src="icons Letrola/poder 1.svg" class="power-icon">
                     <div class="power-info">
                         <strong>Letra Inicial</strong>
                         <span style="font-size: 0.8rem; font-weight: bold; color: var(--bg-color); opacity: 0.8;">Revela
@@ -107,7 +130,7 @@
                     </div>
                 </button>
                 <button id="power-random-letter" class="power-btn">
-                    <img src="icons Letrox/poder 2.svg" class="power-icon" style="width: 35px;">
+                    <img src="icons Letrola/poder 2.svg" class="power-icon" style="width: 35px;">
                     <div class="power-info">
                         <strong>Letra Surpresa</strong>
                         <span style="font-size: 0.8rem; font-weight: bold; color: var(--bg-color); opacity: 0.8;">Revela
@@ -187,7 +210,7 @@
                     style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.35); padding: 16px 20px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05); cursor: pointer;">
                     <span
                         style="font-size: 0.95rem; color: var(--text-main); text-align: left; display: flex; align-items: center; gap: 8px;"><img
-                            src="icons Letrox/som.svg" class="title-icon"> Sons</span>
+                            src="icons Letrola/som.svg" class="title-icon"> Sons</span>
                     <label class="switch" style="margin-left: 15px;">
                         <input type="checkbox" id="setting-sound" checked>
                         <span class="slider round"></span>
@@ -197,7 +220,7 @@
                     style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.35); padding: 16px 20px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05); cursor: pointer;">
                     <span
                         style="font-size: 0.95rem; color: var(--text-main); text-align: left; display: flex; align-items: center; gap: 8px;"><img
-                            src="icons Letrox/shake.svg" class="title-icon"> Shake to
+                            src="icons Letrola/shake.svg" class="title-icon"> Shake to
                         Shuffle</span>
                     <label class="switch" style="margin-left: 15px;">
                         <input type="checkbox" id="setting-shake" checked>
@@ -208,7 +231,7 @@
                     style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.35); padding: 16px 20px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05); cursor: pointer;">
                     <span
                         style="font-size: 0.95rem; color: var(--text-main); text-align: left; display: flex; align-items: center; gap: 8px;"><img
-                            src="icons Letrox/vribração.svg" class="title-icon"> Vibrações</span>
+                            src="icons Letrola/vribração.svg" class="title-icon"> Vibrações</span>
                     <label class="switch" style="margin-left: 15px;">
                         <input type="checkbox" id="setting-vibration" checked>
                         <span class="slider round"></span>
@@ -220,30 +243,29 @@
                 style="margin-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 15px;">
                 <button id="version-btn"
                     style="background: none; border: none; color: var(--secondary); font-size: 0.9rem; font-weight: bold; cursor: pointer; text-decoration: underline;">Versão
-                    0.7.0 ▼</button>
+                    0.8.0 ▼</button>
                 <div id="changelog-content" class="changelog-content hidden"
                     style="margin-top: 10px; background: rgba(0, 0, 0, 0.2); padding: 10px; border-radius: 8px; text-align: left; font-size: 0.85rem; color: #FFFFFF; max-height: 200px; overflow-y: auto;">
 
                     <div style="margin-bottom: 15px;">
                         <p style="color: var(--secondary); font-size: 0.75rem; margin-bottom: 5px; font-weight: bold;">
-                            -- SABOR APP! --</p>
+                            -- APENAS UM CONTRATEMPO! --</p>
                         <ul style="padding-left: 0; list-style-type: none;">
-                            <li style="margin-bottom: 4px;">1- Agora vc pode instalar o jogo direto no seu celular!</li>
-                            <li style="margin-bottom: 4px; list-style: none; margin-left: 0; padding-left: 0;">
-                                <span style="display: block; font-size: 0.8rem; color: #ccc; margin: 4px 0 4px 0; line-height: 1.4;">
-                                    No Android: clique na setinha onde tem o link do site, caso não apareça, entre no menu do navegador (normalmente fica no canto superior da tela) e aperte em "Adicionar a tela inicial" ou "Instalar aplicativo"
-                                </span>
-                                <span style="display: block; font-size: 0.8rem; color: #ccc; margin: 4px 0 8px 0; line-height: 1.4;">
-                                    No Iphone: clique em Compartilhar (ícone do quadrado com setinha) e depois em "Adicionar à Tela de Início".
-                                </span>
-                            </li>
-                            <li style="margin-bottom: 4px;">2- Atualização visual em todos os cards do jogo.</li>
-                            <li style="margin-bottom: 4px;">3- Tentativa de correção do bug que fazia o jogo ficar sem som depois de um tempo jogando.</li>
+                            <li style="margin-bottom: 4px;">1- Novo modo de jogo "Contratempo"! Encontre a maior palavra antes que o tempo acabe!</li>
+                            <li style="margin-bottom: 4px;">2- Adicionado uma vibração ao clicar nas bolinhas do deck.</li>
+                            <li style="margin-bottom: 4px;">3- Seu recorde agora fica salvo mesmo se fechar o app ou recarregar a página.</li>
                             <li style="margin-bottom: 4px;">4- Adição de novas palavras ao dicionário do jogo.</li>
-                            <li style="margin-bottom: 4px;">5- Correção do bug que fazia as bolinha diminuírem demais ao flodar o shuffle.</li>
-                            <li style="margin-bottom: 4px;">6- Adição de um aviso caso o jogador deite o celular.</li>
-                            <li style="margin-bottom: 4px;">7- Correção do som atrasado depois do shuffle.</li>
+                            <li style="margin-bottom: 4px;">5- Correção de bugs.</li>
                         </ul>
+                    </div>
+
+                    <div style="margin-bottom: 15px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">
+                        <h3
+                            style="color: #FFFFFF; margin-bottom: 2px; font-size: 0.9rem; text-transform: lowercase; font-weight: 500;">
+                            Versão: 0.7.0</h3>
+                        <p
+                            style="color: var(--secondary); font-size: 0.75rem; margin-bottom: 0; font-weight: bold; opacity: 1;">
+                            -- SABOR APP! --</p>
                     </div>
 
                     <div style="margin-bottom: 15px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">

@@ -1,11 +1,11 @@
-const CACHE_NAME = 'letrox-v1';
+const CACHE_NAME = 'letrola-v2';
 
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './style.css',
   './script.js',
-  './palavras_letrox.json',
+  './palavras_letrola.json',
   './emoji_kkk.png',
   './icon-192.png',
   './icon-512.png',
@@ -25,7 +25,10 @@ const ASSETS_TO_CACHE = [
   './sons/tap 1.mp3',
   './sons/tap 2.mp3',
   './sons/tap 3.mp3',
-  './sons/tap 4.mp3'
+  './sons/tap 4.mp3',
+  './sons/sino.mp3',
+  './sons/timer.mp3',
+  './icons Letrola/tempo.svg'
 ];
 
 self.addEventListener('install', event => {

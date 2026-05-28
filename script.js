@@ -13,7 +13,7 @@ if ('serviceWorker' in navigator) {
 const activeGhosts = new Map();
 
 // Configurações do Usuário (salvas no localStorage)
-const userSettings = JSON.parse(localStorage.getItem('letrox_settings')) || {
+const userSettings = JSON.parse(localStorage.getItem('letrola_settings')) || {
     sound: true,
     shake: true,
     vibration: true
@@ -33,7 +33,10 @@ const gameState = {
     revealed: false,
     power1Used: false,
     power2Used: false,
-    masterSoundPlayed: false
+    masterSoundPlayed: false,
+    mode: "free", // "free" ou "timeTrial"
+    timeLeft: 150, // 2:30 minutos em segundos
+    timerInterval: null
 };
 
 // ── SoundManager ─────────────────────────────────────────────────────────
@@ -47,7 +50,9 @@ const SoundManager = {
         'poder 01': 'sons/poder 01.mp3',
         'poder 02': 'sons/poder 02.mp3',
         'click': 'sons/click.mp3',
-        'confete': 'sons/confete.mp3'
+        'confete': 'sons/confete.mp3',
+        'timer': 'sons/timer.mp3',
+        'sino': 'sons/sino.mp3'
     },
     groups: {
         balls: [
@@ -68,13 +73,15 @@ const SoundManager = {
         'poder 02': 0.5,
         'click': 0.5,
         'confete': 0.06,
+        'timer': 0.6,
+        'sino': 0.1,
 
         // Efeitos de grupo (bolinhas)
-        'balls 3.mp3': 0.2,
-        'balls 10.mp3': 0.2,
-        'balls 12.mp3': 0.2,
-        'balls 21.mp3': 0.2,
-        'balls 22.mp3': 0.2,
+        'balls 3.mp3': 0.1,
+        'balls 10.mp3': 0.1,
+        'balls 12.mp3': 0.1,
+        'balls 21.mp3': 0.1,
+        'balls 22.mp3': 0.1,
 
         // Efeitos de grupo (taps)
         'tap 1.mp3': 0.1,
@@ -90,6 +97,7 @@ const SoundManager = {
         'completo': [50, 50, 50, 50, 50, 300],
         // 'poder 01' e 'poder 02' sem vibração: cada letra revelada vibra individualmente
         'click': [10, 10],
+        'sino': [150, 100, 150]
         // 'tap': 8 // Vibração rápida no tap das letras
     },
     _audioCtx: null,
@@ -122,7 +130,7 @@ const SoundManager = {
                     const response = await fetch(src);
                     const arrayBuffer = await response.arrayBuffer();
                     this._buffers[name] = await ctx.decodeAudioData(arrayBuffer.slice(0));
-                } catch (e) {}
+                } catch (e) { }
             }
 
             for (const [group, files] of Object.entries(this.groups)) {
@@ -134,10 +142,10 @@ const SoundManager = {
                         const buffer = await ctx.decodeAudioData(arrayBuffer.slice(0));
                         const filename = src.split('/').pop();
                         this._groupBuffers[group].push({ buffer, filename });
-                    } catch (e) {}
+                    } catch (e) { }
                 }
             }
-        } catch (e) {}
+        } catch (e) { }
     },
 
     async _playBuffer(buffer, volume) {
@@ -161,7 +169,7 @@ const SoundManager = {
                 source.disconnect();
                 gain.disconnect();
             };
-        } catch (e) {}
+        } catch (e) { }
     },
 
     play(name) {
@@ -229,8 +237,15 @@ const ui = {
     playBtn: document.getElementById('play-btn'),
     rulesBtn: document.getElementById('rules-btn'),
     backBtn: document.getElementById('back-btn'),
-    recordLevel: document.getElementById('record-level'),
-    recordScore: document.getElementById('record-score'),
+    recordFreeLevel: document.getElementById('record-free-level'),
+    recordFreeScore: document.getElementById('record-free-score'),
+    recordTimeLevel: document.getElementById('record-time-level'),
+    recordTimeScore: document.getElementById('record-time-score'),
+    mainMenuControls: document.getElementById('main-menu-controls'),
+    modeSelectionControls: document.getElementById('mode-selection-controls'),
+    modeTimeBtn: document.getElementById('mode-time-btn'),
+    modeFreeBtn: document.getElementById('mode-free-btn'),
+    modeBackBtn: document.getElementById('mode-back-btn'),
     levelDisplay: document.getElementById('level-display'),
     scoreDisplay: document.getElementById('score-display'),
     nextLevelBtn: document.getElementById('next-level-btn'),
@@ -271,7 +286,7 @@ function setButtonDisabled(btn, disabled) {
 async function initGame() {
     try {
         // Carrega o JSON com o dicionário gerado pelo usuário
-        const response = await fetch("./palavras_letrox.json");
+        const response = await fetch("./palavras_letrola.json");
         if (!response.ok) throw new Error("Erro ao carregar dicionário");
         gameState.wordsDict = await response.json();
 
@@ -293,33 +308,58 @@ async function initGame() {
     }
 }
 
-// Placar da última partida jogada na sessão (reseta ao recarregar a página)
-let lastGameLevel = null;
-let lastGameScore = null;
+// Recordes pessoais persistidos no localStorage
+const savedRecords = JSON.parse(localStorage.getItem('letrola_records')) || {
+    free: { level: null, score: null },
+    timeTrial: { level: null, score: null }
+};
 let hasPlayedThisSession = false;
 
 function updateMenuRecords() {
-    if (lastGameLevel === null) {
-        ui.recordLevel.textContent = "-";
-        ui.recordScore.textContent = "0000";
+    const freeRec = savedRecords.free;
+    const timeRec = savedRecords.timeTrial;
+
+    if (freeRec.level === null) {
+        ui.recordFreeLevel.textContent = "-";
+        ui.recordFreeScore.textContent = "0000";
     } else {
-        ui.recordLevel.textContent = lastGameLevel;
-        ui.recordScore.textContent = lastGameScore.toString().padStart(4, '0');
+        ui.recordFreeLevel.textContent = freeRec.level;
+        ui.recordFreeScore.textContent = freeRec.score.toString().padStart(4, '0');
+    }
+
+    if (timeRec.level === null) {
+        ui.recordTimeLevel.textContent = "-";
+        ui.recordTimeScore.textContent = "0000";
+    } else {
+        ui.recordTimeLevel.textContent = timeRec.level;
+        ui.recordTimeScore.textContent = timeRec.score.toString().padStart(4, '0');
     }
 }
 
 function saveRecords() {
     if (hasPlayedThisSession) {
-        if (lastGameLevel === null || gameState.level > lastGameLevel) {
-            lastGameLevel = gameState.level;
+        const mode = gameState.mode;
+        const record = savedRecords[mode];
+        let changed = false;
+
+        if (record.level === null || gameState.level > record.level) {
+            record.level = gameState.level;
+            changed = true;
         }
-        if (lastGameScore === null || gameState.score > lastGameScore) {
-            lastGameScore = gameState.score;
+        if (record.score === null || gameState.score > record.score) {
+            record.score = gameState.score;
+            changed = true;
+        }
+
+        if (changed) {
+            localStorage.setItem('letrola_records', JSON.stringify(savedRecords));
         }
     }
 }
 
-function startGame() {
+function startGame(mode = 'free') {
+    stopTimer();
+    gameState.mode = mode;
     gameState.level = 1;
     gameState.score = 0;
     hasPlayedThisSession = true;
@@ -338,11 +378,14 @@ function backToMenu() {
     // Se o jogo já foi revelado (jogador clicou em Terminar antes),
     // o segundo clique volta pro menu normalmente
     if (gameState.revealed) {
+        stopTimer();
         saveRecords();
         updateMenuRecords();
         ui.gameScreen.classList.add('hidden');
         ui.menuScreen.classList.remove('hidden');
         ui.backBtn.classList.remove('nav-btn-yellow');
+        ui.mainMenuControls.classList.remove('hidden');
+        ui.modeSelectionControls.classList.add('hidden');
         return;
     }
 
@@ -395,12 +438,95 @@ function loadLevel() {
     gameState.inputLetters = [];
 
     // Atualiza a UI
-    ui.levelDisplay.textContent = gameState.level;
+    updateHeaderDisplay();
     setButtonDisabled(ui.nextLevelBtn, true);
     disableFooter(false);
     renderBoard();
     renderInput();
     renderDeck();
+
+    // Lógica do cronômetro para Contra o Tempo
+    if (gameState.mode === 'timeTrial') {
+        gameState.timeLeft = 150; // 2:30 minutos em segundos
+        startTimer();
+    } else {
+        stopTimer();
+    }
+}
+
+function updateHeaderDisplay() {
+    const levelImg = ui.levelDisplay.previousElementSibling;
+    if (gameState.mode === 'timeTrial') {
+        if (levelImg) {
+            levelImg.src = 'icons Letrola/tempo.svg';
+        }
+        ui.levelDisplay.textContent = formatTime(gameState.timeLeft);
+    } else {
+        if (levelImg) {
+            levelImg.src = 'icons Letrola/fase.svg';
+        }
+        ui.levelDisplay.textContent = gameState.level;
+    }
+}
+
+function formatTime(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+function startTimer() {
+    stopTimer();
+    updateHeaderDisplay();
+
+    gameState.timerInterval = setInterval(() => {
+        // Pausa se algum modal estiver aberto
+        if (!ui.modal.classList.contains('hidden') ||
+            !ui.quitModal.classList.contains('hidden') ||
+            !ui.powersModal.classList.contains('hidden')) {
+            return;
+        }
+
+        gameState.timeLeft--;
+        updateHeaderDisplay();
+
+        if (gameState.timeLeft === 5) {
+            SoundManager.play('timer');
+        }
+
+        if (gameState.timeLeft <= 0) {
+            stopTimer();
+            handleTimeOver();
+        }
+    }, 1000);
+}
+
+function stopTimer() {
+    if (gameState.timerInterval) {
+        clearInterval(gameState.timerInterval);
+        gameState.timerInterval = null;
+    }
+}
+
+function handleTimeOver() {
+    stopTimer();
+    SoundManager.play('sino');
+
+    if (gameState.masterWordFound) {
+        // Encontrou a palavra mestre -> Deixa o jogo como se tivesse clicado em Próxima Fase
+        setButtonDisabled(ui.nextLevelBtn, false);
+        nextLevel();
+    } else {
+        // Não encontrou a palavra mestre -> Deixa o jogo como se tivesse desistido (apenas seta amarela para sair)
+        const missedWords = gameState.validWordsForLevel.filter(w => !w.found);
+        gameState.revealed = true;
+        missedWords.forEach(w => w.revealed = true);
+        renderBoard();
+        disableFooter(true);
+        ui.backBtn.classList.add('nav-btn-yellow');
+        saveRecords();
+        updateMenuRecords();
+    }
 }
 
 function removeAccents(str) {
@@ -765,6 +891,9 @@ function animateFLIPGhost(id, char, startRect, destRect, options = {}) {
 
 // Interações
 function moveFromDeckToInput(deckIndex, char) {
+    if (userSettings.vibration && navigator.vibrate) {
+        navigator.vibrate(12);
+    }
     SoundManager.playRandom('balls');
     const deckWrapper = ui.deckArea.querySelector(`.sphere-wrapper[data-deck-index='${deckIndex}']`);
     const startRect = deckWrapper ? deckWrapper.getBoundingClientRect() : null;
@@ -1086,7 +1215,7 @@ function submitWord() {
                 }
             });
 
-            if (isFirstMaster) {
+            if (isFirstMaster && !levelFinished) {
                 setTimeout(() => {
                     // Sem screen-shake a pedido
 
@@ -1154,6 +1283,7 @@ function nextLevel() {
 
     // Se há palavras faltando e ainda não foram reveladas, revela e pausa o avanço
     if (missedWords.length > 0 && !gameState.revealed) {
+        stopTimer();
         gameState.revealed = true;
         missedWords.forEach(w => w.revealed = true);
         renderBoard();
@@ -1404,7 +1534,18 @@ ui.submitBtn.addEventListener('click', submitWord);
 ui.nextLevelBtn.addEventListener('click', nextLevel);
 ui.playBtn.addEventListener('click', () => {
     requestShakePermission();
-    startGame();
+    ui.mainMenuControls.classList.add('hidden');
+    ui.modeSelectionControls.classList.remove('hidden');
+});
+ui.modeBackBtn.addEventListener('click', () => {
+    ui.modeSelectionControls.classList.add('hidden');
+    ui.mainMenuControls.classList.remove('hidden');
+});
+ui.modeFreeBtn.addEventListener('click', () => {
+    startGame('free');
+});
+ui.modeTimeBtn.addEventListener('click', () => {
+    startGame('timeTrial');
 });
 ui.rulesBtn.addEventListener('click', showRules);
 ui.backBtn.addEventListener('click', backToMenu);
@@ -1431,28 +1572,28 @@ if (closeSettingsBtn) closeSettingsBtn.addEventListener('click', () => settingsM
 if (versionBtn) {
     versionBtn.addEventListener('click', () => {
         const isHidden = changelogContent.classList.toggle('hidden');
-        versionBtn.textContent = isHidden ? "Versão 0.7.0 ▼" : "Versão 0.7.0 ▲";
+        versionBtn.textContent = isHidden ? "Versão 0.8.0 ▼" : "Versão 0.8.0 ▲";
     });
 }
 
 if (settingSound) {
     settingSound.addEventListener('change', (e) => {
         userSettings.sound = e.target.checked;
-        localStorage.setItem('letrox_settings', JSON.stringify(userSettings));
+        localStorage.setItem('letrola_settings', JSON.stringify(userSettings));
     });
 }
 
 if (settingShake) {
     settingShake.addEventListener('change', (e) => {
         userSettings.shake = e.target.checked;
-        localStorage.setItem('letrox_settings', JSON.stringify(userSettings));
+        localStorage.setItem('letrola_settings', JSON.stringify(userSettings));
     });
 }
 
 if (settingVibration) {
     settingVibration.addEventListener('change', (e) => {
         userSettings.vibration = e.target.checked;
-        localStorage.setItem('letrox_settings', JSON.stringify(userSettings));
+        localStorage.setItem('letrola_settings', JSON.stringify(userSettings));
     });
 }
 
@@ -1464,6 +1605,7 @@ ui.quitCancelBtn.addEventListener('click', () => {
 // Botão Confirmar do modal de saída
 ui.quitConfirmBtn.addEventListener('click', () => {
     ui.quitModal.classList.add('hidden');
+    stopTimer();
 
     // Revela palavras não encontradas
     const missedWords = gameState.validWordsForLevel.filter(w => !w.found);
@@ -1567,6 +1709,9 @@ ui.powerRandomLetter.addEventListener('click', () => {
         }
     });
 });
+
+// Desabilita menu de contexto em todo o app (segurar toque)
+document.addEventListener('contextmenu', event => event.preventDefault());
 
 // Inicializa
 initGame();

@@ -1,4 +1,4 @@
-# Regras de Desenvolvimento - Letrox
+# Regras de Desenvolvimento - Letrola
 
 > [!IMPORTANT]
 > **PROIBIÇÃO DE TESTES AUTOMATIZADOS NO NAVEGADOR**

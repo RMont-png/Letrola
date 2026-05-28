@@ -22,6 +22,7 @@
     padding: 0;
     font-family: 'Nunito', sans-serif;
     font-weight: 900;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -35,6 +36,9 @@ body {
     overflow: hidden;
     touch-action: manipulation;
     /* Melhora a resposta ao toque no mobile */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 #app {
@@ -92,18 +96,48 @@ body {
     gap: 12px;
 }
 
+.records-container-split {
+    display: flex;
+    width: 100%;
+    justify-content: space-around;
+    align-items: stretch;
+    gap: 8px;
+}
+
+.record-mode-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.record-mode-divider {
+    width: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 1px;
+    align-self: stretch;
+}
+
 .records-title {
-    font-size: 0.95rem;
+    font-size: 0.8rem;
     color: var(--text-muted);
     font-weight: 900;
     text-transform: uppercase;
-    letter-spacing: 1.5px;
+    letter-spacing: 1px;
+    text-align: center;
+    line-height: 1.2;
+    min-height: 2.4em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .records-values {
     display: flex;
-    gap: 24px;
-    align-items: center;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
     justify-content: center;
 }
 
@@ -111,14 +145,14 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 900;
     color: var(--text-main);
 }
 
 .record-icon {
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
 }
 
 .icon-yellow {
@@ -478,23 +512,27 @@ header {
     animation: flipIn3D 0.45s cubic-bezier(0.215, 0.610, 0.355, 1.000) both;
 }
 
-/* Neon Wave na Palavra Mestra */
+/* Neon Wave na Palavra Mestra - Otimizado usando transform e filter para aceleração de GPU */
 @keyframes neonPulse {
     0% {
-        box-shadow: 0 0 6px var(--secondary), 0 0 12px var(--secondary);
+        transform: scale(1);
+        filter: drop-shadow(0 0 2px var(--secondary));
     }
 
     50% {
-        box-shadow: 0 0 16px var(--secondary), 0 0 32px var(--secondary), 0 0 50px rgba(236, 72, 153, 0.6);
+        transform: scale(1.15);
+        filter: drop-shadow(0 0 8px var(--secondary));
     }
 
     100% {
-        box-shadow: 0 0 6px var(--secondary), 0 0 12px var(--secondary);
+        transform: scale(1);
+        filter: drop-shadow(0 0 2px var(--secondary));
     }
 }
 
 .letter-slot.neon-glow {
     animation: neonPulse 0.6s ease-in-out;
+    will-change: transform, filter;
 }
 
 /* Tremor da Tela */

@@ -1,6 +1,6 @@
 {
-  "name": "Letrox",
-  "short_name": "Letrox",
+  "name": "Letrola",
+  "short_name": "Letrola",
   "description": "Um jogo de formar palavras a partir de letras embaralhadas.",
   "start_url": "./index.html",
   "display": "standalone",
